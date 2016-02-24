@@ -13,6 +13,7 @@ class Value implements \Countable, \IteratorAggregate, \ArrayAccess
     public static $xmlrpcInt = "int";
     public static $xmlrpcBoolean = "boolean";
     public static $xmlrpcDouble = "double";
+    public static $xmlrpcLong = "long";
     public static $xmlrpcString = "string";
     public static $xmlrpcDateTime = "dateTime.iso8601";
     public static $xmlrpcBase64 = "base64";
@@ -24,6 +25,7 @@ class Value implements \Countable, \IteratorAggregate, \ArrayAccess
     public static $xmlrpcTypes = array(
         "i4" => 1,
         "int" => 1,
+        "long" => 1,
         "boolean" => 1,
         "double" => 1,
         "string" => 1,
@@ -62,6 +64,7 @@ class Value implements \Countable, \IteratorAggregate, \ArrayAccess
                     break;
                 case 'i4':
                 case 'int':
+                case 'long':
                 case 'double':
                 case 'string':
                 case 'boolean':
@@ -247,6 +250,8 @@ class Value implements \Countable, \IteratorAggregate, \ArrayAccess
                         // it will produce named html entities, which are invalid xml
                         $rs .= "<${typ}>" . Charset::instance()->encodeEntities($val, PhpXmlRpc::$xmlrpc_internalencoding, $charsetEncoding) . "</${typ}>";
                         break;
+                    //todo: need deleted
+                    case static::$xmlrpcLong:
                     case static::$xmlrpcInt:
                     case static::$xmlrpcI4:
                         $rs .= "<${typ}>" . (int)$val . "</${typ}>";
@@ -304,8 +309,23 @@ class Value implements \Countable, \IteratorAggregate, \ArrayAccess
                 // array
                 $rs .= "<array>\n<data>\n";
                 foreach ($val as $element) {
-                    //$rs.=$this->serializeval($val[$i]);
-                    $rs .= $element->serialize($charsetEncoding);
+
+                    $rs .= "<value>\n";
+                    switch (gettype($element)) {
+                        case 'object' :
+                            $rs .= $element->serialize($charsetEncoding);
+                            break;
+                        case 'integer' :
+                            $rs .= $this->serializedata('int', $element, $charsetEncoding);
+                            break;
+                        case 'float' :
+                            $rs .= $this->serializedata('double', $element, $charsetEncoding);
+                            break;
+                        default :
+                            $this->serializedata(gettype($element), $element, $charsetEncoding);
+
+                    }
+                    $rs .= "</value>\n";
                 }
                 $rs .= "</data>\n</array>";
                 break;

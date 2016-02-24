@@ -41,6 +41,7 @@ class XMLParser
         'BOOLEAN' => array('VALUE'),
         'I4' => array('VALUE'),
         'INT' => array('VALUE'),
+        'LONG' => array('VALUE'),
         'STRING' => array('VALUE'),
         'DOUBLE' => array('VALUE'),
         'DATETIME.ISO8601' => array('VALUE'),
@@ -102,6 +103,7 @@ class XMLParser
                     break;
                 case 'I4':
                 case 'INT':
+                case 'LONG':
                 case 'STRING':
                 case 'BOOLEAN':
                 case 'DOUBLE':
@@ -260,6 +262,7 @@ class XMLParser
                 case 'BOOLEAN':
                 case 'I4':
                 case 'INT':
+                case 'LONG':
                 case 'STRING':
                 case 'DOUBLE':
                 case 'DATETIME.ISO8601':

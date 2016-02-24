@@ -43,6 +43,11 @@ class Client
     public $extracurlopts = array();
 
     /**
+     * @var array
+     */
+    protected $customHeaders = [];
+
+    /**
      * @var bool
      *
      * This determines whether the multicall() method will try to take advantage of the system.multicall xmlrpc method
@@ -554,9 +559,21 @@ class Client
      * @param string $method
      * @return Response
      */
-    protected function sendPayloadHTTP10($req, $server, $port, $timeout = 0, $username = '', $password = '',
-        $authType = 1, $proxyHost = '', $proxyPort = 0, $proxyUsername = '', $proxyPassword = '', $proxyAuthType = 1,
-        $method='http')
+    protected function sendPayloadHTTP10(
+        $req,
+        $server,
+        $port,
+        $timeout = 0,
+        $username = '',
+        $password = '',
+        $authType = 1,
+        $proxyHost = '',
+        $proxyPort = 0,
+        $proxyUsername = '',
+        $proxyPassword = '',
+        $proxyAuthType = 1,
+        $method='http'
+    )
     {
         if ($port == 0) {
             $port = ( $method === "https" ) ? 443 : 80;
@@ -652,6 +669,12 @@ class Client
         // omit port if 80
         $port = ($port == 80) ? '' : (':' . $port);
 
+        $customHeaders = '';
+        if (!empty($this->customHeaders)) {
+            $customHeaders = implode("\r\n", $this->customHeaders);
+            $customHeaders .= "\r\n";
+        }
+
         $op = 'POST ' . $uri . " HTTP/1.0\r\n" .
             'User-Agent: ' . $this->user_agent . "\r\n" .
             'Host: ' . $server . $port . "\r\n" .
@@ -660,6 +683,7 @@ class Client
             $acceptedEncoding .
             $encodingHdr .
             'Accept-Charset: ' . implode(',', $this->accepted_charset_encodings) . "\r\n" .
+            $customHeaders.
             $cookieHeader .
             'Content-Type: ' . $req->content_type . "\r\nContent-Length: " .
             strlen($payload) . "\r\n\r\n" .
@@ -1184,5 +1208,33 @@ class Client
 
             return $response;
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function generateGUID()
+    {
+        mt_srand((double) microtime() * 10000);
+        $charid = md5(uniqid(rand(), true));
+        $hyphen = chr(45);
+        $uuid =
+            substr($charid, 0, 8) . $hyphen
+            .substr($charid, 8, 4) . $hyphen
+            .substr($charid,12, 4) . $hyphen
+            .substr($charid,16, 4) . $hyphen
+            .substr($charid,20,12)
+        ;
+        return $uuid;
+    }
+
+
+    /**
+     * @param $header
+     * @param $value
+     */
+    public function addCustomHeader($header, $value)
+    {
+        $this->customHeaders[] = "{$header}: {$value}";
     }
 }

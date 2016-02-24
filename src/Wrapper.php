@@ -40,6 +40,7 @@ class Wrapper
                 return Value::$xmlrpcString;
             case 'integer':
             case Value::$xmlrpcInt: // 'int'
+            case Value::$xmlrpcLong: // 'long'
             case Value::$xmlrpcI4:
                 return Value::$xmlrpcInt;
             case Value::$xmlrpcDouble: // 'double'
